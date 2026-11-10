@@ -1,0 +1,96 @@
+return_id,order_item_id,return_date,reason
+1,7,2025-10-20,Damaged in transit
+2,25,2025-10-30,Not as described
+3,64,2025-12-19,Not as described
+4,135,2025-12-11,Arrived late
+5,145,2025-05-15,Changed mind
+6,153,2025-09-30,Not as described
+7,155,2025-10-23,Changed mind
+8,182,2025-02-19,Wrong size
+9,197,2025-11-27,Changed mind
+10,218,2025-12-27,Wrong size
+11,219,2025-10-20,Wrong size
+12,266,2025-10-10,Wrong size
+13,267,2025-10-27,Changed mind
+14,275,2025-11-04,Changed mind
+15,285,2025-12-01,Faulty
+16,291,2025-10-07,Not as described
+17,337,2025-04-12,Faulty
+18,350,2025-11-01,Damaged in transit
+19,370,2025-12-27,Changed mind
+20,376,2025-12-27,Changed mind
+21,403,2025-07-15,Changed mind
+22,405,2026-01-05,Not as described
+23,425,2025-12-12,Not as described
+24,458,2025-09-24,Wrong size
+25,484,2025-12-09,Wrong size
+26,513,2026-01-16,Damaged in transit
+27,529,2025-11-04,Arrived late
+28,530,2025-10-27,Changed mind
+29,539,2025-11-29,Changed mind
+30,611,2025-10-07,Wrong size
+31,621,2025-04-30,Changed mind
+32,623,2025-08-31,Not as described
+33,644,2025-12-28,Changed mind
+34,674,2025-12-11,Damaged in transit
+35,680,2025-12-29,Damaged in transit
+36,685,2026-01-22,Changed mind
+37,704,2025-09-27,Changed mind
+38,706,2025-09-08,Faulty
+39,726,2025-09-04,Changed mind
+40,727,2025-09-04,Wrong size
+41,746,2025-07-05,Changed mind
+42,751,2025-08-19,Damaged in transit
+43,799,2025-09-27,Damaged in transit
+44,837,2025-12-19,Changed mind
+45,871,2025-04-10,Faulty
+46,888,2025-02-19,Arrived late
+47,895,2025-11-07,Changed mind
+48,926,2025-11-30,Damaged in transit
+49,951,2025-11-04,Changed mind
+50,964,2025-04-26,Not as described
+51,968,2025-05-07,Changed mind
+52,992,2025-09-12,Damaged in transit
+53,1063,2025-12-12,Faulty
+54,1065,2025-12-22,Changed mind
+55,1077,2025-08-26,Changed mind
+56,1095,2025-12-24,Changed mind
+57,1122,2025-11-03,Wrong size
+58,1124,2025-12-30,Changed mind
+59,1152,2025-05-18,Damaged in transit
+60,1161,2025-12-24,Changed mind
+61,1173,2026-01-08,Not as described
+62,1194,2025-05-26,Arrived late
+63,1232,2025-10-20,Damaged in transit
+64,1303,2025-09-08,Damaged in transit
+65,1306,2025-11-22,Changed mind
+66,1310,2025-11-23,Changed mind
+67,1318,2025-12-14,Arrived late
+68,1336,2026-01-02,Faulty
+69,1343,2025-12-28,Not as described
+70,1344,2026-01-07,Damaged in transit
+71,1347,2025-09-25,Changed mind
+72,1352,2025-10-06,Wrong size
+73,1363,2025-06-21,Damaged in transit
+74,1472,2025-09-30,Changed mind
+75,1490,2025-05-07,Wrong size
+76,1499,2025-08-27,Arrived late
+77,1524,2025-10-20,Changed mind
+78,1529,2025-10-03,Damaged in transit
+79,1555,2025-05-07,Wrong size
+80,1564,2025-12-13,Wrong size
+81,1568,2025-12-09,Changed mind
+82,1579,2025-06-16,Wrong size
+83,1586,2025-12-26,Changed mind
+84,1588,2025-11-10,Changed mind
+85,1615,2025-11-30,Changed mind
+86,1645,2025-05-22,Damaged in transit
+87,1675,2025-12-21,Changed mind
+88,1709,2025-11-28,Changed mind
+89,1765,2025-08-06,Not as described
+90,1791,2025-05-25,Damaged in transit
+91,1807,2025-03-14,Wrong size
+92,1813,2025-09-15,Changed mind
+93,1817,2025-12-14,Faulty
+94,1834,2025-12-04,Damaged in transit
+95,1844,2025-11-30,Not as described

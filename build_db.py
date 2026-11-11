@@ -28,6 +28,20 @@ TABLES = [
 # columns to coerce to int (CSV values are all strings otherwise)
 INT_COLS = {"customer_id", "product_id", "order_id", "order_item_id", "quantity", "return_id"}
 
+# every raw state spelling found in customers.csv, mapped to its standard code.
+# lives in the DB (state_lookup table) rather than inline in SQL, so a new
+# spelling is a row insert, not a query edit.
+STATE_LOOKUP = {
+    "NSW": "NSW", "N.S.W.": "NSW", "NEW SOUTH WALES": "NSW",
+    "VIC": "VIC", "VICTORIA": "VIC", "VIC.": "VIC",
+    "QLD": "QLD", "QUEENSLAND": "QLD",
+    "WA": "WA", "WESTERN AUSTRALIA": "WA",
+    "SA": "SA", "SOUTH AUSTRALIA": "SA",
+    "TAS": "TAS", "TASMANIA": "TAS",
+    "ACT": "ACT", "CANBERRA": "ACT",
+    "NT": "NT", "NORTHERN TERRITORY": "NT",
+}
+
 
 def load_csv(path, columns):
     with open(path, newline="", encoding="utf-8") as f:
@@ -66,6 +80,12 @@ def main():
             rows,
         )
         print(f"loaded {len(rows):>5} rows into {table}")
+
+    conn.executemany(
+        "INSERT INTO state_lookup (raw_spelling, standard_state) VALUES (?, ?)",
+        list(STATE_LOOKUP.items()),
+    )
+    print(f"loaded {len(STATE_LOOKUP):>5} rows into state_lookup")
 
     conn.commit()
     conn.close()

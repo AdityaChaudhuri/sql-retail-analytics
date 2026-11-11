@@ -1,33 +1,28 @@
 -- Cleaning layer. Raw tables stay untouched; every fix lives in a view here.
 
-DROP VIEW IF EXISTS v_sales;
-DROP VIEW IF EXISTS v_order_items_clean;
-DROP VIEW IF EXISTS v_orders_clean;
-DROP VIEW IF EXISTS v_customers_clean;
+DROP VIEW IF EXISTS fact_sales;
+DROP VIEW IF EXISTS clean_order_items;
+DROP VIEW IF EXISTS clean_orders;
+DROP VIEW IF EXISTS clean_customers;
 
--- Fixes DQ2 (state spellings) and DQ3 (duplicate accounts).
--- DQ4 (missing signup_date) is left as NULL - not needed for sales analysis.
-CREATE VIEW v_customers_clean AS
-WITH normalised AS (
+-- State spellings resolved via state_lookup (falls back to the raw value if
+-- something slips through unmapped). Duplicate signups: ROW_NUMBER picks one
+-- canonical row per email, FIRST_VALUE carries that row's customer_id onto
+-- every duplicate so they can all be collapsed onto it downstream.
+-- Missing signup_date is left as NULL - not needed for sales analysis.
+CREATE VIEW clean_customers AS
+WITH ordered AS (
     SELECT
-        customer_id,
-        first_name,
-        last_name,
-        LOWER(TRIM(email)) AS email_norm,
-        CASE
-            WHEN UPPER(TRIM(state)) IN ('NSW','N.S.W.','NEW SOUTH WALES') THEN 'NSW'
-            WHEN UPPER(TRIM(state)) IN ('VIC','VICTORIA','VIC.')          THEN 'VIC'
-            WHEN UPPER(TRIM(state)) IN ('QLD','QUEENSLAND')               THEN 'QLD'
-            WHEN UPPER(TRIM(state)) IN ('WA','WESTERN AUSTRALIA')        THEN 'WA'
-            WHEN UPPER(TRIM(state)) IN ('SA','SOUTH AUSTRALIA')          THEN 'SA'
-            WHEN UPPER(TRIM(state)) IN ('TAS','TASMANIA')                 THEN 'TAS'
-            WHEN UPPER(TRIM(state)) IN ('ACT','CANBERRA')                 THEN 'ACT'
-            WHEN UPPER(TRIM(state)) IN ('NT','NORTHERN TERRITORY')        THEN 'NT'
-            ELSE UPPER(TRIM(state))
-        END AS state,
-        signup_date,
-        MIN(customer_id) OVER (PARTITION BY LOWER(TRIM(email))) AS primary_customer_id
-    FROM customers
+        c.customer_id,
+        c.first_name,
+        c.last_name,
+        LOWER(TRIM(c.email)) AS email_norm,
+        COALESCE(sl.standard_state, UPPER(TRIM(c.state))) AS state,
+        c.signup_date,
+        ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(c.email)) ORDER BY c.customer_id) AS signup_rank,
+        FIRST_VALUE(c.customer_id) OVER (PARTITION BY LOWER(TRIM(c.email)) ORDER BY c.customer_id) AS primary_customer_id
+    FROM customers c
+    LEFT JOIN state_lookup sl ON sl.raw_spelling = UPPER(TRIM(c.state))
 )
 SELECT
     customer_id,
@@ -37,11 +32,11 @@ SELECT
     email_norm AS email,
     state,
     signup_date,
-    (customer_id = primary_customer_id) AS is_primary_account
-FROM normalised;
+    (signup_rank = 1) AS is_primary_account
+FROM ordered;
 
--- Fixes DQ5: status normalised to lowercase.
-CREATE VIEW v_orders_clean AS
+-- status normalised to lowercase so a plain `= 'completed'` works everywhere
+CREATE VIEW clean_orders AS
 SELECT
     order_id,
     customer_id,
@@ -50,16 +45,19 @@ SELECT
     channel
 FROM orders;
 
--- Fixes DQ6: drops zero/negative quantity lines.
-CREATE VIEW v_order_items_clean AS
+-- drops the handful of zero/negative quantity lines
+CREATE VIEW clean_order_items AS
 SELECT *
 FROM order_items
 WHERE quantity > 0;
 
--- One row per valid sold line item, joined and ready for analysis.
--- Revenue is attributed to the primary customer_id so duplicate accounts
--- don't split a customer's lifetime value.
-CREATE VIEW v_sales AS
+-- one row per valid sold line item, fully joined and calculated, which is
+-- what every query in 04_analysis.sql actually reads from. Revenue is
+-- attributed to the primary_customer_id, so a duplicate signup doesn't
+-- split one customer's spend across two ids. discount_bucket groups the
+-- line into none/low/high so discounting can be analysed as a category,
+-- not just a raw percentage.
+CREATE VIEW fact_sales AS
 SELECT
     oi.order_item_id,
     o.order_id,
@@ -74,11 +72,16 @@ SELECT
     oi.quantity,
     oi.unit_price,
     oi.discount,
+    CASE
+        WHEN oi.discount = 0 THEN 'none'
+        WHEN oi.discount <= 0.10 THEN 'low'
+        ELSE 'high'
+    END AS discount_bucket,
     ROUND(oi.quantity * oi.unit_price * (1 - oi.discount), 2) AS revenue,
     ROUND(oi.quantity * p.unit_cost, 2) AS cost,
     ROUND(oi.quantity * oi.unit_price * (1 - oi.discount) - oi.quantity * p.unit_cost, 2) AS margin,
     EXISTS (SELECT 1 FROM returns r WHERE r.order_item_id = oi.order_item_id) AS is_returned
-FROM v_order_items_clean oi
-JOIN v_orders_clean o ON o.order_id = oi.order_id
-JOIN v_customers_clean c ON c.customer_id = o.customer_id
+FROM clean_order_items oi
+JOIN clean_orders o ON o.order_id = oi.order_id
+JOIN clean_customers c ON c.customer_id = o.customer_id
 JOIN products p ON p.product_id = oi.product_id;

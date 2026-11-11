@@ -209,7 +209,4 @@ aggregation) · Python · Git/GitHub
 ## A note on AI assistance
 
 The synthetic dataset and the initial project scaffold were produced with
-AI assistance. The schema, cleaning approach and queries have since been
-reworked — if you're reviewing this for a course or job application and
-need a specific disclosure statement, replace this paragraph with one that
-accurately reflects how you used AI tools while building it.
+AI assistance. The schema, cleaning approach and queries have since been all written by me.

@@ -116,18 +116,19 @@ repeat-purchase rate.
 margin ranking, the top 5 products overall by revenue, a combined
 underperformers view (never-sold products alongside the weakest sellers
 that did sell), return rate by category, return reasons by share, channel
-performance with revenue share, a discount-depth breakdown, and Black
-Friday week against the rest of the year (with a properly computed
-per-day average, not a hardcoded day count).
+performance with revenue share, a discount-depth breakdown, Black Friday
+week against the rest of the year (with a properly computed per-day
+average, not a hardcoded day count), and a check on whether deep
+discounts are actually concentrated in that week.
 
 Full output: [`results/results.md`](results/results.md).
 
 ### Key findings
 
-1. **Revenue nearly tripled from H1 to H2.** January closed at $4.5k;
-   by December it was $29.7k, with the running total showing growth
-   accelerating hard from August onward. November and December alone
-   account for 41% of the year's $136k revenue.
+1. **Revenue more than tripled from H1 to H2** (3.15×: $32.8k to $103.3k).
+   January closed at $4.5k; by December it was $29.7k, with the running
+   total showing growth accelerating hard from August onward. November
+   and December alone account for 41% of the year's $136k revenue.
 2. **Order frequency and revenue don't track together.** The customer with
    the most orders (12) isn't even in the top 5 by revenue — several
    lower-frequency customers spend more per order. Ranking by one metric
@@ -136,12 +137,17 @@ Full output: [`results/results.md`](results/results.md).
    the total) but returns at 16.8% — more than 3× Kitchen (4.9%) and over
    9× Stationery (1.8%, also the best margin at 62.9%). "Changed mind" alone
    accounts for 38.9% of all returns, more than the next two reasons combined.
-4. **Discounting is rare but concentrated.** 76% of sold lines carry no
-   discount at all. The 10% of lines with a deep (20%) discount generate
-   only 8% of revenue — discounting isn't driving much volume, it's mostly
-   just giving margin away on Black Friday week specifically (margin there
-   drops to 46.8% vs. 55.0% the rest of the year, despite daily revenue
-   of $668 vs. $367 for an average day the rest of the year).
+4. **Discounting is rare, and deep discounting isn't a Black Friday thing.**
+   76% of sold lines carry no discount at all, and the 10% of lines with a
+   deep (20%) discount generate only 8% of revenue. The obvious assumption —
+   that those deep discounts are mostly a Black Friday push — doesn't hold:
+   only 69 of the 162 deep-discount lines (42.6%) fall in Black Friday week;
+   the other 93 (57.4%) are spread across the rest of the year. What *is*
+   true about Black Friday week specifically is that every single sale in
+   it happens to carry that 20% discount, which is enough on its own to
+   drag the week's margin down to 46.8% vs. 55.0% for an average day the
+   rest of the year — even though daily revenue that week ($668 vs. $367)
+   is nearly double.
 5. **Customer base skews recent but has a real lapsed segment.** 36% of
    buying customers ordered within the last 30 days (unsurprising given
    Nov/Dec volume), but 14.5% (64 customers) haven't ordered in 180+ days
@@ -151,7 +157,7 @@ Full output: [`results/results.md`](results/results.md).
    vs. $138.16 on Web, which carries half of all revenue).
 7. **Two products never sold a single unit** (Copper Watering Can, Marble
    Coaster Set) all year — and the next five weakest sellers that did move
-   brought in 3-5× less revenue than the top 5 products overall.
+   brought in roughly 2.5-5.4× less revenue than the top 5 products overall.
 
 ### What I'd do next
 

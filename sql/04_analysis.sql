@@ -5,6 +5,7 @@
 -- @section Customer insights
 
 -- @title Monthly revenue trend (with running total)
+-- @desc Revenue and order count by month, plus a running year-to-date total.
 WITH monthly AS (
     SELECT strftime('%Y-%m', order_date) AS month, SUM(revenue) AS revenue,
            COUNT(DISTINCT order_id) AS n_orders
@@ -21,6 +22,7 @@ FROM monthly
 ORDER BY month;
 
 -- @title Top customers by revenue and by order count
+-- @desc Top 5 customers two ways, side by side - highest spenders vs. most frequent buyers (not the same people).
 WITH per_customer AS (
     SELECT c.customer_id, c.first_name, c.last_name, c.state,
            SUM(s.revenue) AS revenue, COUNT(DISTINCT s.order_id) AS n_orders
@@ -45,6 +47,7 @@ FROM ranked WHERE order_count_rank <= 5
 ORDER BY ranked_by, revenue DESC;
 
 -- @title Revenue and customer reach by state
+-- @desc Revenue, customer count and average spend per customer, broken down by state.
 SELECT
     customer_state AS state,
     COUNT(DISTINCT customer_id) AS n_customers,
@@ -56,6 +59,7 @@ GROUP BY state
 ORDER BY revenue DESC;
 
 -- @title Customer lifecycle stage (as of 2025-12-31)
+-- @desc Customers bucketed by days since their last order: New (0-30), Active (31-90), At risk (91-180), Lapsed (180+).
 WITH order_span AS (
     SELECT customer_id, MAX(order_date) AS last_order_date, COUNT(DISTINCT order_id) AS n_orders
     FROM fact_sales
@@ -83,6 +87,7 @@ GROUP BY lifecycle_stage
 ORDER BY n_customers DESC;
 
 -- @title Repeat purchase rate
+-- @desc What share of buying customers came back for a second order.
 WITH customer_orders AS (
     SELECT customer_id, COUNT(DISTINCT order_id) AS n_orders
     FROM fact_sales
@@ -99,6 +104,7 @@ FROM customer_orders;
 -- @section Product & operations insights
 
 -- @title Category revenue, margin and share of total
+-- @desc Which categories make the most money, and which actually keep the most of it (margin).
 WITH by_category AS (
     SELECT category, SUM(revenue) AS revenue, SUM(margin) AS margin
     FROM fact_sales
@@ -116,6 +122,7 @@ FROM by_category
 ORDER BY revenue DESC;
 
 -- @title Best-selling products overall (top 5 by revenue)
+-- @desc The 5 products that earned the most revenue across the whole year.
 WITH product_sales AS (
     SELECT product_id, product_name, category, SUM(quantity) AS units_sold, SUM(revenue) AS revenue
     FROM fact_sales
@@ -128,6 +135,7 @@ WHERE rn <= 5
 ORDER BY revenue DESC;
 
 -- @title Underperforming and never-sold products
+-- @desc Products that sold zero units all year, plus the 5 weakest sellers that did sell something.
 WITH product_sales AS (
     SELECT p.product_id, p.product_name, p.category, COALESCE(SUM(fs.revenue), 0) AS revenue
     FROM products p
@@ -144,6 +152,7 @@ WHERE rn <= 5
 ORDER BY flag, revenue;
 
 -- @title Return rate by category
+-- @desc Of everything sold per category, what percentage came back as a return.
 SELECT
     p.category,
     COUNT(*) AS items_sold,
@@ -158,6 +167,7 @@ GROUP BY p.category
 ORDER BY return_rate_pct DESC;
 
 -- @title Return reasons, share of total
+-- @desc Why items come back, ranked by how often each reason is given.
 SELECT
     reason,
     COUNT(*) AS n_returns,
@@ -167,6 +177,7 @@ GROUP BY reason
 ORDER BY n_returns DESC;
 
 -- @title Channel performance and revenue share
+-- @desc Web vs. App vs. Marketplace - order volume, average order value, and share of total revenue.
 SELECT
     channel,
     COUNT(DISTINCT order_id) AS n_orders,
@@ -178,6 +189,7 @@ GROUP BY channel
 ORDER BY avg_order_value DESC;
 
 -- @title Discount depth breakdown
+-- @desc How much of total revenue comes from full-price lines vs. low (10%) vs. high (20%) discount lines.
 SELECT
     discount_bucket,
     COUNT(*) AS n_lines,
@@ -189,6 +201,7 @@ GROUP BY discount_bucket
 ORDER BY revenue DESC;
 
 -- @title Black Friday week (Nov 24-30) vs. rest of year
+-- @desc Revenue, margin and a properly computed per-day average for Black Friday week vs. every other day.
 WITH bucketed AS (
     SELECT *,
         CASE WHEN order_date BETWEEN '2025-11-24' AND '2025-11-30'
@@ -211,3 +224,21 @@ FROM bucketed b
 JOIN day_counts d ON d.period = b.period
 GROUP BY b.period, d.n_days
 ORDER BY b.period;
+
+-- @title Deep discounts: Black Friday week vs. rest of year
+-- @desc Checks the assumption that Black Friday drives most deep (20%) discounting - it doesn't.
+WITH high_discount AS (
+    SELECT *,
+        CASE WHEN order_date BETWEEN '2025-11-24' AND '2025-11-30'
+             THEN 'Black Friday week' ELSE 'Rest of year' END AS period
+    FROM fact_sales
+    WHERE status = 'completed' AND discount_bucket = 'high'
+)
+SELECT
+    period,
+    COUNT(*) AS n_lines,
+    ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct_of_high_discount_lines,
+    ROUND(SUM(revenue), 2) AS revenue
+FROM high_discount
+GROUP BY period
+ORDER BY period;

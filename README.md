@@ -206,7 +206,3 @@ Or open `retail.db` directly in [DB Browser for SQLite](https://sqlitebrowser.or
 SQLite · SQL (CTEs, window functions, lookup-table joins, conditional
 aggregation) · Python · Git/GitHub
 
-## A note on AI assistance
-
-The synthetic dataset and the initial project scaffold were produced with
-AI assistance. The schema, cleaning approach and queries have since been all written by me.
